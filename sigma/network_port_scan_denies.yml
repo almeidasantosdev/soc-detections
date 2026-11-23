@@ -1,0 +1,26 @@
+title: Firewall Port Scan (Denies)
+id: 55b0e2aa-018c-4d9d-socn1-fw-scan
+status: experimental
+description: Burst of denied connections from one source across many destination ports.
+author: almeidasantosdev
+date: 2026/03/23
+references:
+  - https://attack.mitre.org/techniques/T1046/
+logsource:
+  category: firewall
+detection:
+  selection:
+    action:
+      - deny
+      - drop
+      - blocked
+  timeframe: 5m
+  condition: selection | count(dst_port) by src_ip > 15
+falsepositives:
+  - Approved vulnerability assessment
+  - Noisy broken clients
+level: low
+tags:
+  - attack.discovery
+  - attack.t1046
+  - soc.n1

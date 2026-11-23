@@ -1,0 +1,5 @@
+index=firewall (action=deny OR action=drop OR action=blocked)
+| bin _time span=5m
+| stats dc(dest_port) AS distinct_ports, count AS denies, dc(dest_ip) AS destinations, values(dest_port) AS ports by src_ip, _time
+| where distinct_ports >= 15
+| sort - distinct_ports

@@ -1,0 +1,12 @@
+// Microsoft Sentinel / Log Analytics — SSH brute force (Syslog)
+// Adjust Computer / Facility filters to your workspace.
+Syslog
+| where Facility == "auth" or Facility == "authpriv"
+| where SyslogMessage has_any ("Failed password", "Invalid user")
+| extend SrcIP = extract(@"from ([0-9a-fA-F\.:]+)", 1, SyslogMessage)
+| where isnotempty(SrcIP)
+| summarize FailureCount = count(), Targets = dcount(Computer), Sample = any(SyslogMessage)
+    by SrcIP, bin(TimeGenerated, 5m)
+| where FailureCount >= 6
+| project TimeGenerated, SrcIP, FailureCount, Targets, Sample
+| order by FailureCount desc

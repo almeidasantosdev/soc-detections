@@ -1,0 +1,25 @@
+title: Windows RDP / Network Logon Brute Force
+id: 9d44a1c0-bb12-4e01-socn1-rdp-bf
+status: experimental
+description: Multiple failed logons (Event ID 4625) suggestive of RDP or network brute force.
+author: almeidasantosdev
+date: 2026/03/23
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4625
+    LogonType:
+      - 3
+      - 10
+  timeframe: 10m
+  condition: selection | count() by IpAddress > 8
+falsepositives:
+  - External scanners
+  - Legacy apps with bad credentials
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1110
+  - soc.n1

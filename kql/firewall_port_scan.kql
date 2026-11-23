@@ -1,0 +1,13 @@
+// Microsoft Sentinel — port scan via CommonSecurityLog / Azure Firewall style denies
+CommonSecurityLog
+| where DeviceAction has_any ("Deny", "Drop", "Blocked")
+| where isnotempty(DestinationPort)
+| summarize
+    DenyCount = count(),
+    DistinctPorts = dcount(DestinationPort),
+    Ports = make_set(DestinationPort, 30),
+    Destinations = dcount(DestinationIP)
+    by SourceIP, bin(TimeGenerated, 5m)
+| where DistinctPorts >= 15
+| project TimeGenerated, SourceIP, DenyCount, DistinctPorts, Destinations, Ports
+| order by DistinctPorts desc

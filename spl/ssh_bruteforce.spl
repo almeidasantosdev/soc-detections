@@ -1,0 +1,6 @@
+index=linux sourcetype=linux_secure ("Failed password" OR "Invalid user")
+| rex field=_raw "from (?<src_ip>\S+)"
+| bin _time span=5m
+| stats count AS failures, dc(host) AS targets, values(user) AS users by src_ip, _time
+| where failures >= 6
+| sort - failures

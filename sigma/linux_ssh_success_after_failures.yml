@@ -1,0 +1,30 @@
+title: Linux SSH Success After Failures
+id: 2e8f0c41-9aa1-4b77-socn1-ssh-success
+status: experimental
+description: >
+  Highlights a successful SSH login from an IP that recently generated multiple
+  failed attempts — strong N2 escalation candidate.
+author: almeidasantosdev
+date: 2026/03/23
+references:
+  - https://attack.mitre.org/techniques/T1110/
+  - https://attack.mitre.org/techniques/T1078/
+logsource:
+  product: linux
+  service: auth
+detection:
+  failures:
+    pam_message|contains: 'Failed password'
+  success:
+    pam_message|contains: 'Accepted'
+  timeframe: 15m
+  condition: failures | count() by src_ip > 5 and success
+falsepositives:
+  - User mistyped password then logged in correctly (still worth a quick check on privileged accounts)
+level: high
+tags:
+  - attack.credential_access
+  - attack.t1110
+  - attack.t1078
+  - soc.n1
+  - soc.escalate_n2

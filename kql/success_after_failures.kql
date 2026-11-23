@@ -1,0 +1,17 @@
+// Successful SSH auth from IPs with recent failures (escalation candidate)
+let window = 15m;
+let failures = Syslog
+| where SyslogMessage has "Failed password"
+| extend SrcIP = extract(@"from ([0-9a-fA-F\.:]+)", 1, SyslogMessage)
+| where isnotempty(SrcIP)
+| summarize Failures = count() by SrcIP, Computer, bin(TimeGenerated, window)
+| where Failures >= 5;
+let success = Syslog
+| where SyslogMessage has "Accepted"
+| extend SrcIP = extract(@"from ([0-9a-fA-F\.:]+)", 1, SyslogMessage)
+| where isnotempty(SrcIP)
+| project SuccessTime = TimeGenerated, SrcIP, Computer, SyslogMessage;
+failures
+| join kind=inner success on SrcIP, Computer
+| where SuccessTime between (TimeGenerated .. TimeGenerated + window)
+| project SuccessTime, SrcIP, Computer, Failures, SyslogMessage
